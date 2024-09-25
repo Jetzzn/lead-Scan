@@ -5,7 +5,8 @@ const AIRTABLE_BASE_ID = 'appVADkxTuwcN78c6';
 
 const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 const USERS_TABLE_NAME = 'Approve Exhibitors';
-const DOWNLOAD_DATA_TABLE_NAME = 'Placement student';
+const DOWNLOAD_DATA_TABLE_NAME = '🧑🏻‍🎓Visitors';
+const ID_COLUMN_NAME = 'Ref ID';
 const CORS_PROXY = 'http://localhost:8080/';
 const columnMapping = {
   'Username': 'Username',
@@ -118,28 +119,27 @@ export const getUserProfile = async (username) => {
     throw error;
   }
 };
-export const getUserById = async (userId) => {
-  try {
-    console.log(`Fetching user data for ID: ${userId}`);
-    const records = await base(DOWNLOAD_DATA_TABLE_NAME).select({
-      filterByFormula: `{ID} = '${userId}'`,
-      maxRecords: 1
-    }).firstPage();
 
-    if (records.length > 0) {
-      const userData = records[0].fields;
-      console.log('User data fetched successfully');
-      return {
-        id: userId,
-        Userame: userData.Username,
-      
-        // Add any other fields you want to include
+export const getUserById = async (id) => {
+  try {
+    console.log(`Fetching user data for ID: ${id}`);
+    const records = await base(DOWNLOAD_DATA_TABLE_NAME).select({
+      filterByFormula: `{${ID_COLUMN_NAME}} = '${id}'`
+    }).firstPage();
+    
+    if (records && records.length > 0) {
+      const record = records[0];
+      const userData = {
+        id: record.get(ID_COLUMN_NAME),
+        ...record.fields
       };
+      console.log('User data fetched successfully');
+      return userData;
     } else {
       throw new Error('User not found');
     }
   } catch (error) {
-    console.error('Error fetching user data:', error);
+    console.error('Error fetching user:', error);
     throw error;
   }
 };
