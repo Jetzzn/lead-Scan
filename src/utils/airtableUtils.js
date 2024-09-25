@@ -131,7 +131,7 @@ export const getUserById = async (userId) => {
       console.log('User data fetched successfully');
       return {
         id: userId,
-        Userame: userData.Userame,
+        Userame: userData.Username,
       
         // Add any other fields you want to include
       };

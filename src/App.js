@@ -51,7 +51,7 @@ function App() {
     localStorage.removeItem('userData');
   };
 
-  return (
+   return (
     <Router>
       <div>
         {isLoggedIn && <Navbar userData={userData} onLogout={handleLogout} />}
