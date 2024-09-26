@@ -148,20 +148,22 @@ export const getUserById = async (userId) => {
     throw error;
   }
 };
-export const storeUserScanData = (username, scanData) => {
-  const key = `scanData_${username}`;
+export const storeUserScanData = (username, user) => {
+  const key = `userData_${username}`;
   const existingData = localStorage.getItem(key);
   const dataArray = existingData ? JSON.parse(existingData) : [];
-  dataArray.push(scanData);
+  const scanTimestamp = new Date().toISOString();
+  const userWithTimestamp = { ...user, scanTimestamp };
+  dataArray.push(userWithTimestamp);
   localStorage.setItem(key, JSON.stringify(dataArray));
 };
 
+
 export const getUserScanData = (username) => {
-  const key = `scanData_${username}`;
+  const key = `userData_${username}`;
   const data = localStorage.getItem(key);
   return data ? JSON.parse(data) : [];
 };
-
 export const clearUserScanData = (username) => {
   const key = `scanData_${username}`;
   localStorage.removeItem(key);
@@ -177,8 +179,10 @@ export const getScannedIds = (username) => {
   const ids = localStorage.getItem(key);
   return ids ? new Set(JSON.parse(ids)) : new Set();
 };
-
-export const clearScannedIds = (username) => {
-  const key = `scannedIds_${username}`;
-  localStorage.removeItem(key);
+export const clearUserData = (username) => {
+  const scanDataKey = `userData_${username}`;
+  const scannedIdsKey = `scannedIds_${username}`;
+  localStorage.removeItem(scanDataKey);
+  localStorage.removeItem(scannedIdsKey);
 };
+

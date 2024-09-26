@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QrScanner from 'react-qr-scanner';
-import { getUserById, storeUserScanData, getUserScanData, storeScannedIds, getScannedIds } from '../utils/airtableUtils';
+import { getUserById, storeUserScanData, getUserScanData, storeScannedIds, getScannedIds, clearUserData } from '../utils/airtableUtils';
 
 function Scanner({ username }) {
   const [scanResult, setScanResult] = useState(null);
@@ -52,14 +52,16 @@ function Scanner({ username }) {
   const goToDownloadList = () => {
     navigate('/download');
   };
+
   const clearAllData = () => {
-    localStorage.removeItem('scannedUsersData');
-    localStorage.removeItem('scannedIds');
+    clearUserData(username);
     setUserData([]);
     setScannedIds(new Set());
     setError(null);
     setScanResult(null);
+    alert('All data has been cleared.');
   };
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>QR Code Scanner</h2>
@@ -81,6 +83,8 @@ function Scanner({ username }) {
             {userData.map((user, index) => (
               <li key={index}>
                 {user['First name']} {user['Last name']} - Email: {user['Email']} - Phone Number: {user['Phone Number']}
+                <br />
+                Scanned at: {new Date(user.scanTimestamp).toLocaleString()}
               </li>
             ))}
           </ul>
@@ -97,7 +101,8 @@ function Scanner({ username }) {
           border: 'none',
           borderRadius: '5px',
           cursor: 'pointer',
-          marginTop: '20px'
+          marginTop: '20px',
+          marginRight: '10px'
         }}
       >
         Go to Download List
@@ -107,7 +112,7 @@ function Scanner({ username }) {
         style={{
           padding: '10px 20px',
           fontSize: '16px',
-          backgroundColor: '#007bff',
+          backgroundColor: '#dc3545',
           color: 'white',
           border: 'none',
           borderRadius: '5px',
@@ -115,7 +120,7 @@ function Scanner({ username }) {
           marginTop: '20px'
         }}
       >
-        Clear All
+        Clear All Data
       </button>
     </div>
   );
