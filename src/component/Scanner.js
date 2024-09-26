@@ -1,23 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QrScanner from 'react-qr-scanner';
-import { getUserById } from '../utils/airtableUtils';
+import { getUserById, storeUserScanData, getUserScanData, storeScannedIds, getScannedIds } from '../utils/airtableUtils';
 
-function Scanner() {
+function Scanner({ username }) {
   const [scanResult, setScanResult] = useState(null);
+  const [userData, setUserData] = useState([]);
   const [error, setError] = useState(null);
+  const [scannedIds, setScannedIds] = useState(new Set());
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setUserData(getUserScanData(username));
+    setScannedIds(getScannedIds(username));
+  }, [username]);
 
   const handleScan = async (data) => {
     if (data) {
-      setScanResult(data.text);
+      const scannedId = data.text;
+      setScanResult(scannedId);
+
+      if (scannedIds.has(scannedId)) {
+        setError('This QR code has already been scanned.');
+        return;
+      }
+
       try {
-        const user = await getUserById(data.text);
+        const user = await getUserById(scannedId);
         console.log('Fetched user data:', user);
-        // Store the user data in localStorage
-        localStorage.setItem('scannedUserData', JSON.stringify(user));
-        // Navigate to the Download List page
-        navigate('/download');
+        
+        storeUserScanData(username, user);
+        setUserData(prevData => [...prevData, user]);
+
+        const newScannedIds = new Set(scannedIds).add(scannedId);
+        setScannedIds(newScannedIds);
+        storeScannedIds(username, newScannedIds);
+
+        setError(null);
       } catch (err) {
         console.error('Error fetching user data:', err);
         setError('Failed to fetch user data. Please try again.');
@@ -30,6 +49,17 @@ function Scanner() {
     setError('Error scanning QR code. Please try again.');
   };
 
+  const goToDownloadList = () => {
+    navigate('/download');
+  };
+  const clearAllData = () => {
+    localStorage.removeItem('scannedUsersData');
+    localStorage.removeItem('scannedIds');
+    setUserData([]);
+    setScannedIds(new Set());
+    setError(null);
+    setScanResult(null);
+  };
   return (
     <div style={{ padding: '20px' }}>
       <h2>QR Code Scanner</h2>
@@ -42,7 +72,51 @@ function Scanner() {
         />
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {scanResult && <p>Scanned QR Code: {scanResult}</p>}
+      {scanResult && <p>Last Scanned QR Code: {scanResult}</p>}
+      
+      {userData.length > 0 && (
+        <div>
+          <h3>Scanned User Data:</h3>
+          <ul>
+            {userData.map((user, index) => (
+              <li key={index}>
+                {user['First name']} {user['Last name']} - Email: {user['Email']} - Phone Number: {user['Phone Number']}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      <button 
+        onClick={goToDownloadList}
+        style={{
+          padding: '10px 20px',
+          fontSize: '16px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          marginTop: '20px'
+        }}
+      >
+        Go to Download List
+      </button>
+      <button 
+        onClick={clearAllData}
+        style={{
+          padding: '10px 20px',
+          fontSize: '16px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          marginTop: '20px'
+        }}
+      >
+        Clear All
+      </button>
     </div>
   );
 }

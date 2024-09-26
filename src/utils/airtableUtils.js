@@ -133,7 +133,11 @@ export const getUserById = async (userId) => {
       console.log('User data fetched successfully:', userData); 
       return {
         id: userId,
-        'First name': userData['First name'], 
+        'First name': userData['First name'],
+        'Last name': userData['Last name'],
+        'Email': userData['Email'],
+        'Phone Number': userData['Phone Number']
+        
       };
     } else {
       console.log('No records found for this userId'); 
@@ -143,4 +147,38 @@ export const getUserById = async (userId) => {
     console.error('Error fetching user data:', error);
     throw error;
   }
+};
+export const storeUserScanData = (username, scanData) => {
+  const key = `scanData_${username}`;
+  const existingData = localStorage.getItem(key);
+  const dataArray = existingData ? JSON.parse(existingData) : [];
+  dataArray.push(scanData);
+  localStorage.setItem(key, JSON.stringify(dataArray));
+};
+
+export const getUserScanData = (username) => {
+  const key = `scanData_${username}`;
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : [];
+};
+
+export const clearUserScanData = (username) => {
+  const key = `scanData_${username}`;
+  localStorage.removeItem(key);
+};
+
+export const storeScannedIds = (username, ids) => {
+  const key = `scannedIds_${username}`;
+  localStorage.setItem(key, JSON.stringify([...ids]));
+};
+
+export const getScannedIds = (username) => {
+  const key = `scannedIds_${username}`;
+  const ids = localStorage.getItem(key);
+  return ids ? new Set(JSON.parse(ids)) : new Set();
+};
+
+export const clearScannedIds = (username) => {
+  const key = `scannedIds_${username}`;
+  localStorage.removeItem(key);
 };
