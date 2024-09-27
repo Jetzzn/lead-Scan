@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserScanData, clearUserData } from '../utils/airtableUtils';
+import { getUserScanData, clearUserData, deleteUserScanEntry } from '../utils/airtableUtils';
 
 function DownloadList({ username }) {
   const [userData, setUserData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     loadData();
   }, [username]);
 
-  const loadData = () => {
-    const data = getUserScanData(username);
+  const loadData = async () => {
+    const data = await getUserScanData(username);
     console.log('Loaded data:', data); // For debugging
     setUserData(data);
   };
@@ -50,10 +51,36 @@ function DownloadList({ username }) {
     setUserData([]);
     alert('All your scanned data has been cleared.');
   };
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Filter data based on search term
+  const filteredData = userData.filter(user =>
+    Object.values(user).some(value =>
+      value && value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>Your Scanned QR Code Data</h2>
-      {userData.length > 0 ? (
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={handleSearch}
+        style={{
+          width: '100%',
+          padding: '10px',
+          marginBottom: '20px',
+          borderRadius: '5px',
+          border: '1px solid #ddd'
+        }}
+      />
+
+      {filteredData.length > 0 ? (
         <div>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
             <thead>
@@ -67,7 +94,7 @@ function DownloadList({ username }) {
               </tr>
             </thead>
             <tbody>
-              {userData.map((user, index) => (
+              {filteredData.map((user, index) => (
                 <tr key={index}>
                   <td style={{ border: '1px solid #ddd', padding: '8px' }}>{user.id}</td>
                   <td style={{ border: '1px solid #ddd', padding: '8px' }}>{user['First name']}</td>
@@ -80,7 +107,7 @@ function DownloadList({ username }) {
             </tbody>
           </table>
           <div style={{ marginBottom: '20px' }}>
-            <button 
+            <button
               onClick={handleDownload}
               style={{
                 padding: '10px 20px',
@@ -95,7 +122,7 @@ function DownloadList({ username }) {
             >
               Download CSV
             </button>
-            <button 
+            <button
               onClick={clearAllData}
               style={{
                 padding: '10px 20px',
@@ -112,9 +139,9 @@ function DownloadList({ username }) {
           </div>
         </div>
       ) : (
-        <p>No scanned data available. Please scan QR codes first.</p>
+        <p>No scanned data available or no matches found for your search.</p>
       )}
-      <button 
+      <button
         onClick={() => navigate('/scanner')}
         style={{
           padding: '10px 20px',
