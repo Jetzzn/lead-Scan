@@ -8,13 +8,19 @@ function DownloadList({ username }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!username) {
+      navigate('/login');  // Redirect to login page if no username
+      return;
+    }
     loadData();
-  }, [username]);
+  }, [username, navigate]);
 
   const loadData = async () => {
-    const data = await getUserScanData(username);
-    console.log("Loaded data:", data); // For debugging
-    setUserData(data);
+    if (username) {
+      const data = await getUserScanData(username);
+      console.log("Loaded data:", data);
+      setUserData(data);
+    }
   };
 
   const handleDownload = () => {
@@ -77,64 +83,70 @@ function DownloadList({ username }) {
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Your Scanned QR Code Data</h2>
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchTerm}
-        onChange={handleSearch}
-        style={styles.searchInput}
-      />
+      {username ? (
+        <>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleSearch}
+            style={styles.searchInput}
+          />
 
-      {filteredData.length > 0 ? (
-        <div>
-          <button onClick={handleDownload} style={styles.downloadButton}>
-            Download CSV
+          {filteredData.length > 0 ? (
+            <div>
+              <button onClick={handleDownload} style={styles.downloadButton}>
+                Download CSV
+              </button>
+              <div style={styles.tableContainer}>
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.tableHeader}>ID</th>
+                      <th style={styles.tableHeader}>First Name</th>
+                      <th style={styles.tableHeader}>Last Name</th>
+                      <th style={styles.tableHeader}>Email</th>
+                      <th style={styles.tableHeader}>Phone Number</th>
+                      <th style={styles.tableHeader}>Scan Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.map((user, index) => (
+                      <tr
+                        key={index}
+                        style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}
+                      >
+                        <td style={styles.tableCell}>{user.id}</td>
+                        <td style={styles.tableCell}>{user["First name"]}</td>
+                        <td style={styles.tableCell}>{user["Last name"]}</td>
+                        <td style={styles.tableCell}>{user["Email"]}</td>
+                        <td style={styles.tableCell}>{user["Phone Number"]}</td>
+                        <td style={styles.tableCell}>
+                          {new Date(user.scanTimestamp).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={styles.clearButtonContainer}>
+                <button onClick={clearAllData} style={styles.clearButton}>
+                  Clear All Data
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p style={styles.noDataMessage}>
+              No scanned data available or no matches found for your search.
+            </p>
+          )}
+          <button onClick={() => navigate("/scanner")} style={styles.scannerButton}>
+            Go to Scanner
           </button>
-          <div style={styles.tableContainer}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.tableHeader}>ID</th>
-                  <th style={styles.tableHeader}>First Name</th>
-                  <th style={styles.tableHeader}>Last Name</th>
-                  <th style={styles.tableHeader}>Email</th>
-                  <th style={styles.tableHeader}>Phone Number</th>
-                  <th style={styles.tableHeader}>Scan Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((user, index) => (
-                  <tr
-                    key={index}
-                    style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}
-                  >
-                    <td style={styles.tableCell}>{user.id}</td>
-                    <td style={styles.tableCell}>{user["First name"]}</td>
-                    <td style={styles.tableCell}>{user["Last name"]}</td>
-                    <td style={styles.tableCell}>{user["Email"]}</td>
-                    <td style={styles.tableCell}>{user["Phone Number"]}</td>
-                    <td style={styles.tableCell}>
-                      {new Date(user.scanTimestamp).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div style={styles.clearButtonContainer}>
-            <button onClick={clearAllData} style={styles.clearButton}>
-              Clear All Data
-            </button>
-          </div>
-        </div>
+        </>
       ) : (
-        <p style={styles.noDataMessage}>
-          No scanned data available or no matches found for your search.
-        </p>
+        <p>Please log in to view your scanned data.</p>
       )}
-      <button onClick={() => navigate("/scanner")} style={styles.scannerButton}>
-        Go to Scanner
-      </button>
     </div>
   );
 }
@@ -203,7 +215,7 @@ const styles = {
   },
   clearButtonContainer: {
     marginTop: "30px",
-    marginBottom: "40px", // Added more space between buttons
+    marginBottom: "40px",
   },
   clearButton: {
     padding: "10px 20px",

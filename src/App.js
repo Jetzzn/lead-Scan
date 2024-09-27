@@ -12,6 +12,7 @@ import DownloadList from "./component/DownloadList";
 import Navbar from "./component/Navbar";
 import { getUserProfile } from "./utils/airtableUtils";
 import "./App.css";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -28,11 +29,11 @@ function App() {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (isLoggedIn && userData) {
+      if (isLoggedIn && userData?.username) {
         try {
           const profile = await getUserProfile(userData.username);
-          setUserData(profile);
-          localStorage.setItem("userData", JSON.stringify(profile));
+          setUserData(prevData => ({ ...prevData, ...profile }));
+          localStorage.setItem("userData", JSON.stringify({ ...userData, ...profile }));
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
         }
@@ -56,6 +57,13 @@ function App() {
     localStorage.removeItem("userData");
   };
 
+  const ProtectedRoute = ({ children }) => {
+    if (!isLoggedIn) {
+      return <Navigate to="/login" />;
+    }
+    return children;
+  };
+
   return (
     <Router>
       <div>
@@ -64,42 +72,37 @@ function App() {
           <Routes>
             <Route
               path="/login"
-              element={
-                isLoggedIn ? (
-                  <Navigate to="/dashboard" />
-                ) : (
-                  <Login onLogin={handleLogin} />
-                )
-              }
+              element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />}
             />
             <Route
               path="/dashboard"
-              element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/scanner"
               element={
-                isLoggedIn ? (
-                  <Scanner username={userData.username} />
-                ) : (
-                  <Navigate to="/login" />
-                )
+                <ProtectedRoute>
+                  <Scanner username={userData?.username} />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/download"
               element={
-                isLoggedIn ? (
-                  <DownloadList username={userData.username} />
-                ) : (
-                  <Navigate to="/login" />
-                )
+                <ProtectedRoute>
+                  <DownloadList username={userData?.username} />
+                </ProtectedRoute>
               }
             />
             <Route
-              path="*"
+              path="/"
               element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} />}
             />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
       </div>

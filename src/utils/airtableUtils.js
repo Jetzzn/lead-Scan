@@ -30,7 +30,6 @@ export const getUserCredentials = async () => {
     return records.map(record => ({
       username: record.get('Username'),
       password: record.get('Password'),
-     
     }));
   } catch (error) {
     console.error('Error fetching user credentials from Airtable:', error);
@@ -77,7 +76,6 @@ export const getUserProfile = async (username) => {
       const rawUserData = records[0].fields;
       const userData = {};
 
-      // Map the Airtable column names to our desired variable names
       Object.keys(columnMapping).forEach(airtableColumn => {
         const ourVariable = columnMapping[airtableColumn];
         userData[ourVariable] = rawUserData[airtableColumn];
@@ -101,21 +99,18 @@ export const getUserById = async (userId) => {
       maxRecords: 1
     }).firstPage();
 
-    console.log('Fetched records:', records); 
-
     if (records.length > 0) {
-      const userData = records[0].fields; 
-      console.log('User data fetched successfully:', userData); 
+      const userData = records[0].fields;
+      console.log('User data fetched successfully:', userData);
       return {
         id: userId,
         'First name': userData['First name'],
         'Last name': userData['Last name'],
         'Email': userData['Email'],
         'Phone Number': userData['Phone Number']
-        
       };
     } else {
-      console.log('No records found for this userId'); 
+      console.log('No records found for this userId');
       throw new Error('User not found');
     }
   } catch (error) {
@@ -140,10 +135,9 @@ export const getUserScanData = (username) => {
   return data ? JSON.parse(data) : [];
 };
 export const clearUserScanData = (username) => {
-  const key = `scanData_${username}`;
+  const key = `userData_${username}`;
   localStorage.removeItem(key);
 };
-
 export const storeScannedIds = (username, ids) => {
   const key = `scannedIds_${username}`;
   localStorage.setItem(key, JSON.stringify([...ids]));
@@ -154,10 +148,9 @@ export const getScannedIds = (username) => {
   const ids = localStorage.getItem(key);
   return ids ? new Set(JSON.parse(ids)) : new Set();
 };
+
 export const clearUserData = (username) => {
-  const scanDataKey = `userData_${username}`;
+  clearUserScanData(username);
   const scannedIdsKey = `scannedIds_${username}`;
-  localStorage.removeItem(scanDataKey);
   localStorage.removeItem(scannedIdsKey);
 };
-
