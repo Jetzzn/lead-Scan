@@ -53,43 +53,18 @@ export const getDownloadData = async () => {
   }
 };
 
-// export const addLead = async (leadData) => {
+
+
+// export const testAirtableConnection = async () => {
 //   try {
-//     console.log('Adding new lead to Airtable');
-//     const result = await base('Leads').create([{ fields: leadData }]);
-//     console.log('Lead added successfully:', result);
-//     return result[0];
+//     const tableList = await base.table(DOWNLOAD_DATA_TABLE_NAME).select().firstPage();
+//     console.log(`Successfully connected to Airtable. Found ${tableList.length} records in ${DOWNLOAD_DATA_TABLE_NAME}`);
+//     return `Connection successful. Found ${tableList.length} records in ${DOWNLOAD_DATA_TABLE_NAME}`;
 //   } catch (error) {
-//     console.error('Error adding lead to Airtable:', error);
+//     console.error('Airtable connection test failed:', error);
 //     throw error;
 //   }
 // };
-
-// export const getAllLeads = async () => {
-//   try {
-//     console.log('Fetching all leads from Airtable');
-//     const records = await base('Leads').select().all();
-//     console.log(`Fetched ${records.length} lead records`);
-//     return records.map(record => ({
-//       id: record.id,
-//       ...record.fields
-//     }));
-//   } catch (error) {
-//     console.error('Error fetching leads from Airtable:', error);
-//     throw error;
-//   }
-// };
-
-export const testAirtableConnection = async () => {
-  try {
-    const tableList = await base.table(DOWNLOAD_DATA_TABLE_NAME).select().firstPage();
-    console.log(`Successfully connected to Airtable. Found ${tableList.length} records in ${DOWNLOAD_DATA_TABLE_NAME}`);
-    return `Connection successful. Found ${tableList.length} records in ${DOWNLOAD_DATA_TABLE_NAME}`;
-  } catch (error) {
-    console.error('Airtable connection test failed:', error);
-    throw error;
-  }
-};
 export const getUserProfile = async (username) => {
   try {
     console.log(`Fetching user profile for ${username}`);

@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QrScanner from 'react-qr-scanner';
 import { getUserById, storeUserScanData, getUserScanData, storeScannedIds, getScannedIds, clearUserData } from '../utils/airtableUtils';
+import Modal from './Modal'; // Import the modal component
 
 function Scanner({ username }) {
   const [scanResult, setScanResult] = useState(null);
   const [userData, setUserData] = useState([]);
   const [error, setError] = useState(null);
   const [scannedIds, setScannedIds] = useState(new Set());
+  const [modalUser, setModalUser] = useState(null); // State for modal user data
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +40,8 @@ function Scanner({ username }) {
         storeScannedIds(username, newScannedIds);
 
         setError(null);
+        setModalUser(user); // Set the user data to show in the modal
+        setIsModalOpen(true); // Open the modal
       } catch (err) {
         console.error('Error fetching user data:', err);
         setError('Failed to fetch user data. Please try again.');
@@ -60,6 +65,11 @@ function Scanner({ username }) {
     setError(null);
     setScanResult(null);
     alert('All data has been cleared.');
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalUser(null); // Clear modal user data on close
   };
 
   return (
@@ -122,6 +132,11 @@ function Scanner({ username }) {
       >
         Clear All Data
       </button>
+
+      {/* Modal for displaying user data */}
+      {isModalOpen && modalUser && (
+        <Modal user={modalUser} onClose={closeModal} />
+      )}
     </div>
   );
 }

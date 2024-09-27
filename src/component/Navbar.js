@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-function Navbar({ userData, onLogout  }) {
+function Navbar({ userData, onLogout }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
@@ -12,76 +14,32 @@ function Navbar({ userData, onLogout  }) {
     onLogout();
     navigate('/login');
   };
+
   const handleBack = () => {
-    navigate(-1); // This navigates to the previous page
+    navigate(-1); // Navigate to the previous page
   };
-  const location = useLocation();
+
   const isDashboard = location.pathname === '/dashboard';
+
   return (
-    <nav style={{
-      backgroundColor: '#333',
-      padding: '10px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    }}>
+    <nav style={styles.navbar}>
       <div style={{ flex: 1 }}>
         {!isDashboard && (
-        <button 
-          onClick={handleBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            fontSize: '16px'
-          }}
-        >
-          ← Back
-        </button>  
-      )}
+          <button onClick={handleBack} style={styles.backButton}>
+            ← Back
+          </button>
+        )}
       </div>
       <div style={{ position: 'relative' }}>
-        <button 
-          onClick={toggleDropdown}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'white',
-            fontSize: '16px'
-          }}
-        >
+        <button onClick={toggleDropdown} style={styles.profileButton}>
           Profile 👤
         </button>
         {showDropdown && userData && (
-          <div style={{
-            position: 'absolute',
-            right: 0,
-            backgroundColor: 'white',
-            border: '1px solid #ddd',
-            padding: '10px',
-            borderRadius: '4px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-            zIndex: 1000,
-            minWidth: '200px'
-          }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>User Profile</h3>
-            <p><strong>Username:</strong> {userData.Username}</p>
-       <p><strong>Institution:</strong> {userData.Institution}</p>
-       
-            <button 
-              onClick={handleLogout}
-              style={{
-                backgroundColor: '#f44336',
-                color: 'white',
-                border: 'none',
-                padding: '5px 10px',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                marginTop: '10px'
-              }}
-            >
+          <div style={styles.dropdown}>
+            <h3 style={styles.dropdownTitle}>User Profile</h3>
+            <p style={styles.dropdownText}><strong>Username:</strong> {userData.Username}</p>
+            <p style={styles.dropdownText}><strong>Institution:</strong> {userData.Institution}</p>
+            <button onClick={handleLogout} style={styles.logoutButton}>
               Logout
             </button>
           </div>
@@ -90,4 +48,75 @@ function Navbar({ userData, onLogout  }) {
     </nav>
   );
 }
+
+const styles = {
+  navbar: {
+    background: 'linear-gradient(to right, #4A90E2, #50A1F2)',
+    padding: '15px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    color: 'white',
+    fontFamily: 'Arial, sans-serif',
+    position: 'relative',
+  },
+  backButton: {
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    cursor: 'pointer',
+    fontSize: '18px',
+    padding: '5px 10px',
+    transition: 'color 0.3s',
+  },
+  profileButton: {
+    background: 'none',
+    border: 'none',
+    color: 'white',
+    cursor: 'pointer',
+    fontSize: '18px',
+    padding: '5px 10px',
+    transition: 'color 0.3s',
+  },
+  profileButtonHover: {
+    color: '#ccc',
+  },
+  dropdown: {
+    position: 'absolute',
+    right: 0,
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    padding: '15px',
+    borderRadius: '8px',
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    zIndex: 1000,
+    minWidth: '220px',
+    animation: 'fadeIn 0.3s ease-in-out',
+  },
+  dropdownTitle: {
+    margin: '0 0 10px',
+    fontSize: '16px',
+    color: '#333',
+  },
+  dropdownText: {
+    margin: '5px 0',
+    fontSize: '14px',
+    color: '#555',
+  },
+  logoutButton: {
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    padding: '8px 12px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    marginTop: '10px',
+    transition: 'background-color 0.3s',
+  },
+  logoutButtonHover: {
+    backgroundColor: '#d32f2f',
+  },
+};
+
 export default Navbar;
