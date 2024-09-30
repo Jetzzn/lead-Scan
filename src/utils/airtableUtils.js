@@ -6,6 +6,7 @@ const AIRTABLE_BASE_ID = 'appVADkxTuwcN78c6';
 const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 const USERS_TABLE_NAME = 'Approve Exhibitors';
 const DOWNLOAD_DATA_TABLE_NAME = '🧑🏻‍🎓Visitors';
+const DEVICE_LOGINS_TABLE_NAME = 'DeviceLogins';
 const CORS_PROXY = 'http://localhost:8080/';
 const columnMapping = {
   'Username': 'Username',
@@ -14,29 +15,122 @@ const columnMapping = {
 
   // Add any other mappings here
 };
+const DEVICE_LIMIT = 2;
 Airtable.configure({
   endpointUrl: CORS_PROXY + 'https://api.airtable.com',
   apiKey: AIRTABLE_API_KEY
 });
 
 // const base = Airtable.base(AIRTABLE_BASE_ID);
-export const getUserCredentials = async () => {
+export const getUserCredentials = async (username, password) => {
   try {
-    console.log(`Fetching user credentials from Airtable table: ${USERS_TABLE_NAME}`);
     const records = await base(USERS_TABLE_NAME).select({
-      fields: ['Username', 'Password']
-    }).all();
-    console.log(`Fetched ${records.length} user records`);
-    return records.map(record => ({
-      username: record.get('Username'),
-      password: record.get('Password'),
-    }));
+      filterByFormula: `AND({Username} = '${username}', {Password} = '${password}')`
+    }).firstPage();
+
+    if (records.length > 0) {
+      return {
+        username: records[0].get('Username'),
+        // Add any other user data you want to return
+      };
+    }
+    return null;
   } catch (error) {
     console.error('Error fetching user credentials from Airtable:', error);
     throw error;
   }
 };
+export const addDeviceLogin = async (username, deviceId) => {
+  try {
+    const existingLogins = await getDeviceLogins(username);
+    
+    if (existingLogins.length >= DEVICE_LIMIT) {
+      // Remove the oldest login
+      const oldestLogin = existingLogins[0];
+      await base(DEVICE_LOGINS_TABLE_NAME).destroy(oldestLogin.id);
+    }
+    
+    const loginTime = new Date().toISOString();
+    
+    await base(DEVICE_LOGINS_TABLE_NAME).create({
+      Username: username,
+      DeviceId: deviceId,
+      LoginTime: loginTime
+    });
 
+    console.log(`Device login added for ${username} with device ${deviceId}`);
+  } catch (error) {
+    console.error('Error adding device login:', error);
+    throw error;
+  }
+};
+export const removeDeviceLogin = async (username, deviceId) => {
+  if (!username || !deviceId) {
+    console.error('removeDeviceLogin: Missing username or deviceId');
+    return;
+  }
+
+  try {
+    const records = await base(DEVICE_LOGINS_TABLE_NAME).select({
+      filterByFormula: `AND({Username} = '${username}', {DeviceId} = '${deviceId}')`
+    }).all();
+
+    for (let record of records) {
+      await base(DEVICE_LOGINS_TABLE_NAME).destroy(record.id);
+    }
+
+    console.log(`Device login removed for ${username} with device ${deviceId}`);
+  } catch (error) {
+    console.error('Error removing device login:', error);
+    throw error;
+  }
+};
+
+export const getDeviceLogins = async (username) => {
+  try {
+    const records = await base(DEVICE_LOGINS_TABLE_NAME).select({
+      filterByFormula: `{Username} = '${username}'`,
+      sort: [{ field: 'LoginTime', direction: 'asc' }]
+    }).all();
+    
+    return records.map(record => ({
+      id: record.id,
+      deviceId: record.get('DeviceId'),
+      loginTime: record.get('LoginTime')
+    }));
+  } catch (error) {
+    console.error('Error getting device logins:', error);
+    throw error;
+  }
+};
+
+
+
+export const checkDeviceLimit = async (username, deviceId) => {
+  try {
+    const existingLogins = await getDeviceLogins(username);
+    
+    // If this device is already logged in, it's allowed
+    if (existingLogins.some(login => login.deviceId === deviceId)) {
+      return true;
+    }
+    
+    // Otherwise, check if we're at the limit
+    return existingLogins.length < DEVICE_LIMIT;
+  } catch (error) {
+    console.error('Error checking device limit:', error);
+    throw error;
+  }
+};
+
+
+
+export const generateDeviceId = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 export const getDownloadData = async () => {
   try {
     console.log(`Fetching download data from Airtable table: ${DOWNLOAD_DATA_TABLE_NAME}`);

@@ -1,48 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserCredentials } from '../utils/airtableUtils';
+import { getUserCredentials, checkDeviceLimit, addDeviceLogin, removeDeviceLogin, generateDeviceId } from '../utils/airtableUtils';
+
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [credentials, setCredentials] = useState([]);
+  const [deviceId, setDeviceId] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchCredentials();
+    let storedDeviceId = localStorage.getItem('deviceId');
+    if (!storedDeviceId) {
+      storedDeviceId = generateDeviceId();
+      localStorage.setItem('deviceId', storedDeviceId);
+    }
+    setDeviceId(storedDeviceId);
   }, []);
 
-  const fetchCredentials = async () => {
-    try {
-      const fetchedCredentials = await getUserCredentials();
-      setCredentials(fetchedCredentials);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching credentials:', err);
-      setError('Failed to load user data. Please try again later.');
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const user = credentials.find(
-      cred => cred.username === username && cred.password === password
-    );
-
-    if (user) {
-      onLogin({ username: user.username }); // We only need to pass the username
-      navigate('/dashboard');
-    } else {
-      setError('Invalid username or password');
+    try {
+      const user = await getUserCredentials(username, password);
+      if (user) {
+        const canLogin = await checkDeviceLimit(user.username, deviceId);
+        if (canLogin) {
+          await addDeviceLogin(user.username, deviceId);
+          onLogin({ username: user.username, deviceId: deviceId });
+          navigate('/dashboard');
+        } else {
+          setError('Login limit reached. Please log out from another device.');
+        }
+      } else {
+        setError('Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('An error occurred during login. Please try again.');
     }
   };
 
-  if (loading) return <div>Loading user data...</div>;
+  
+ 
 
   return (
     <div style={styles.container}>

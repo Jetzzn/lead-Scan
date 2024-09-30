@@ -10,7 +10,7 @@ import Dashboard from "./component/Dashboard";
 import Scanner from "./component/Scanner";
 import DownloadList from "./component/DownloadList";
 import Navbar from "./component/Navbar";
-import { getUserProfile } from "./utils/airtableUtils";
+import { getUserProfile,checkDeviceLimit,removeDeviceLogin   } from "./utils/airtableUtils";
 import "./App.css";
 
 function App() {
@@ -22,8 +22,14 @@ function App() {
     const storedUserData = localStorage.getItem("userData");
 
     if (storedLoginStatus === "true" && storedUserData) {
-      setIsLoggedIn(true);
-      setUserData(JSON.parse(storedUserData));
+      const userData = JSON.parse(storedUserData);
+      if (checkDeviceLimit(userData.username, userData.deviceId)) {
+        setIsLoggedIn(true);
+        setUserData(userData);
+      } else {
+        // Force logout if device limit is exceeded
+        handleLogout();
+      }
     }
   }, []);
 
@@ -43,6 +49,7 @@ function App() {
     fetchUserProfile();
   }, [isLoggedIn, userData?.username]);
 
+  
   const handleLogin = (user) => {
     setIsLoggedIn(true);
     setUserData(user);
@@ -50,13 +57,28 @@ function App() {
     localStorage.setItem("userData", JSON.stringify(user));
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserData(null);
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userData");
+  const handleLogout = async () => {
+    if (userData && userData.username && userData.deviceId) {
+      try {
+        await removeDeviceLogin(userData.username, userData.deviceId);
+        setIsLoggedIn(false);
+        setUserData(null);
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userData");
+        // Navigate to login page or perform any other necessary actions
+      } catch (error) {
+        console.error('Logout error:', error);
+        // Handle logout error (e.g., show an error message to the user)
+      }
+    } else {
+      console.error('Unable to logout: User data is missing');
+      // Handle the case where user data is missing
+      setIsLoggedIn(false);
+      setUserData(null);
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userData");
+    }
   };
-
   const ProtectedRoute = ({ children }) => {
     if (!isLoggedIn) {
       return <Navigate to="/login" />;
