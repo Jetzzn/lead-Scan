@@ -12,7 +12,7 @@ import DownloadList from "./component/DownloadList";
 import Navbar from "./component/Navbar";
 import { getUserProfile,checkDeviceLimit,removeDeviceLogin   } from "./utils/airtableUtils";
 import "./App.css";
-
+import Banner from "./component/Banner";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -88,9 +88,14 @@ function App() {
 
   return (
     <Router>
-      <div>
-        {isLoggedIn && <Navbar userData={userData} onLogout={handleLogout} />}
-        <div className="container">
+        <div style={styles.app}>
+        {isLoggedIn && (
+          <>
+            <Navbar userData={userData} onLogout={handleLogout} />
+            <Banner /> {/* Add the Banner component here */}
+          </>
+        )}
+        <div style={styles.container}>
           <Routes>
             <Route
               path="/login"
@@ -131,5 +136,23 @@ function App() {
     </Router>
   );
 }
-
+const styles = {
+  app: {
+    fontFamily: 'Arial, sans-serif',
+    maxWidth: '100%',
+    margin: '0 auto',
+    padding: '0',
+    boxSizing: 'border-box',
+    minHeight: '100vh',
+    backgroundColor: '#FFD300', // Yellow background
+  },
+  container: {
+    width: '100%',
+    padding: '0 20px',
+    boxSizing: 'border-box',
+    '@media (max-width: 768px)': {
+      padding: '0 10px',
+    },
+  },
+};
 export default App;
