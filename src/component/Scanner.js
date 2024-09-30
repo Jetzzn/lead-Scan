@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback  } from "react";
 import { useNavigate } from "react-router-dom";
 import QrScanner from "react-qr-scanner";
 import {
   getUserById,
   storeUserScanData,
   getUserScanData,
-  storeScannedIds,
-  getScannedIds,
   clearUserData,
 } from "../utils/airtableUtils";
 import Modal from "./Modal"; // Import the modal component
@@ -15,77 +13,91 @@ function Scanner({ username }) {
   const [scanResult, setScanResult] = useState(null);
   const [userData, setUserData] = useState([]);
   const [error, setError] = useState(null);
+  const [modalUser, setModalUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [scannedIds, setScannedIds] = useState(new Set());
-  const [modalUser, setModalUser] = useState(null); // State for modal user data
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [isScanning, setIsScanning] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (username) {
-      setUserData(getUserScanData(username));
-      setScannedIds(getScannedIds(username));
-    }
-  }, [username]);
+  // useEffect(() => {
+  //   if (username) {
+  //     loadUserData();
+  //   }
+  // }, [username]);
+
   useEffect(() => {
     if (!username) {
-      navigate("/login"); // Redirect to login page if no username
+      navigate("/login");
       return;
     }
+    loadUserData();
   }, [username, navigate]);
-  const handleScan = async (data) => {
-    if (data) {
+  const loadUserData = async () => {
+    try {
+      const data = await getUserScanData(username);
+      setUserData(data);
+      setScannedIds(new Set(data.map((user) => user.id)));
+    } catch (error) {
+      console.error("Error loading user data:", error);
+      setError("Failed to load user data. Please try again.");
+    }
+  };
+
+  const handleScan = useCallback(async (data) => {
+    if (data && isScanning) {
+      setIsScanning(false);  // Disable scanning immediately
       const scannedId = data.text;
       setScanResult(scannedId);
 
       if (scannedIds.has(scannedId)) {
         setError("This QR code has already been scanned.");
+        setTimeout(() => setIsScanning(true), 3000);  // Re-enable scanning after 3 seconds
         return;
       }
 
       try {
         const user = await getUserById(scannedId);
-        console.log("Fetched user data:", user);
-
-        storeUserScanData(username, user);
-        setUserData((prevData) => [...prevData, user]);
-
-        const newScannedIds = new Set(scannedIds).add(scannedId);
-        setScannedIds(newScannedIds);
-        storeScannedIds(username, newScannedIds);
-
+        await storeUserScanData(username, user);
+        setUserData(prevData => [...prevData, user]);
+        setScannedIds(prevIds => new Set(prevIds).add(scannedId));
         setError(null);
-        setModalUser(user); // Set the user data to show in the modal
-        setIsModalOpen(true); // Open the modal
+        setModalUser(user);
+        setIsModalOpen(true);
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to fetch user data. Please try again.");
+      } finally {
+        setTimeout(() => setIsScanning(true), 3000);  // Re-enable scanning after 3 seconds
       }
     }
-  };
-
-  const handleError = (err) => {
+  }, [isScanning, scannedIds, username]);
+  const handleError = useCallback((err) => {
     console.error(err);
     setError("Error scanning QR code. Please try again.");
-  };
+  }, []);
 
   const goToDownloadList = () => {
     navigate("/download");
   };
 
-  const clearAllData = () => {
-    clearUserData(username);
-    setUserData([]);
-    setScannedIds(new Set());
-    setError(null);
-    setScanResult(null);
-    alert("All data has been cleared.");
+  const clearAllData = async () => {
+    try {
+      await clearUserData(username);
+      setUserData([]);
+      setScannedIds(new Set());
+      setError(null);
+      setScanResult(null);
+      alert("All data has been cleared.");
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      setError("Failed to clear data. Please try again.");
+    }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setModalUser(null); // Clear modal user data on close
+    setModalUser(null);
   };
-
   return (
     <div style={{ padding: "20px" }}>
       <h2>QR Code Scanner</h2>
@@ -99,7 +111,7 @@ function Scanner({ username }) {
               style={{ width: '100%' }}
             />
           </div>
-          </>
+        </>
       ) : (
         <p>Please log in to use the scanner.</p>
       )}
@@ -154,7 +166,6 @@ function Scanner({ username }) {
         Clear All Data
       </button>
 
-      {/* Modal for displaying user data */}
       {isModalOpen && modalUser && (
         <Modal user={modalUser} onClose={closeModal} />
       )}

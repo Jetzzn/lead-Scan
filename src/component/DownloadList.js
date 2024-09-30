@@ -6,7 +6,7 @@ function DownloadList({ username }) {
   const [userData, setUserData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!username) {
       navigate('/login');  // Redirect to login page if no username
@@ -17,12 +17,20 @@ function DownloadList({ username }) {
 
   const loadData = async () => {
     if (username) {
-      const data = await getUserScanData(username);
-      console.log("Loaded data:", data);
-      setUserData(data);
+      try {
+        setLoading(true);
+        const data = await getUserScanData(username);
+        console.log("Loaded data:", data);
+        setUserData(data);
+      } catch (error) {
+        console.error("Error loading data:", error);
+        alert("Failed to load scanned data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
-
+ 
   const handleDownload = () => {
     if (userData.length === 0) return;
 
@@ -61,12 +69,17 @@ function DownloadList({ username }) {
     }
   };
 
-  const clearAllData = () => {
-    clearUserData(username);
-    setUserData([]);
-    alert("All your scanned data has been cleared.");
-  };
 
+  const clearAllData = async () => {
+    try {
+      await clearUserData(username);
+      setUserData([]);
+      alert("All your scanned data has been cleared.");
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      alert("Failed to clear data. Please try again.");
+    }
+  };
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -92,7 +105,7 @@ function DownloadList({ username }) {
             onChange={handleSearch}
             style={styles.searchInput}
           />
-
+  
           {filteredData.length > 0 ? (
             <div>
               <button onClick={handleDownload} style={styles.downloadButton}>
@@ -150,7 +163,6 @@ function DownloadList({ username }) {
     </div>
   );
 }
-
 const styles = {
   container: {
     padding: "20px",

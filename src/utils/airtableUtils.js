@@ -7,6 +7,7 @@ const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 const USERS_TABLE_NAME = 'Approve Exhibitors';
 const DOWNLOAD_DATA_TABLE_NAME = '🧑🏻‍🎓Visitors';
 const DEVICE_LOGINS_TABLE_NAME = 'DeviceLogins';
+const SCANNED_DATA_TABLE_NAME = 'ScannedData'; 
 const CORS_PROXY = 'http://localhost:8080/';
 const columnMapping = {
   'Username': 'Username',
@@ -212,22 +213,46 @@ export const getUserById = async (userId) => {
     throw error;
   }
 };
-export const storeUserScanData = (username, user) => {
-  const key = `userData_${username}`;
-  const existingData = localStorage.getItem(key);
-  const dataArray = existingData ? JSON.parse(existingData) : [];
-  const scanTimestamp = new Date().toISOString();
-  const userWithTimestamp = { ...user, scanTimestamp };
-  dataArray.push(userWithTimestamp);
-  localStorage.setItem(key, JSON.stringify(dataArray));
+export const storeUserScanData = async (username, user) => {
+  try {
+    const scanTimestamp = new Date().toISOString();
+    await base(SCANNED_DATA_TABLE_NAME).create({
+      Username: username,
+      ScannedUserId: user.id,
+      FirstName: user['First name'],
+      LastName: user['Last name'],
+      Email: user['Email'],
+      PhoneNumber: user['Phone Number'],
+      ScanTimestamp: scanTimestamp
+    });
+    console.log(`Scan data stored for ${username}`);
+  } catch (error) {
+    console.error('Error storing scan data in Airtable:', error);
+    throw error;
+  }
 };
 
-
-export const getUserScanData = (username) => {
-  const key = `userData_${username}`;
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : [];
+export const getUserScanData = async (username) => {
+  try {
+    const records = await base(SCANNED_DATA_TABLE_NAME).select({
+      filterByFormula: `{Username} = '${username}'`,
+      sort: [{ field: 'ScanTimestamp', direction: 'desc' }]
+    }).all();
+    
+    return records.map(record => ({
+      id: record.get('ScannedUserId'),
+      'First name': record.get('FirstName'),
+      'Last name': record.get('LastName'),
+      'Email': record.get('Email'),
+      'Phone Number': record.get('PhoneNumber'),
+      scanTimestamp: record.get('ScanTimestamp')
+    }));
+  } catch (error) {
+    console.error('Error fetching user scan data from Airtable:', error);
+    throw error;
+  }
 };
+
 export const clearUserScanData = (username) => {
   const key = `userData_${username}`;
   localStorage.removeItem(key);
@@ -243,8 +268,18 @@ export const getScannedIds = (username) => {
   return ids ? new Set(JSON.parse(ids)) : new Set();
 };
 
-export const clearUserData = (username) => {
-  clearUserScanData(username);
-  const scannedIdsKey = `scannedIds_${username}`;
-  localStorage.removeItem(scannedIdsKey);
+export const clearUserData = async (username) => {
+  try {
+    const records = await base(SCANNED_DATA_TABLE_NAME).select({
+      filterByFormula: `{Username} = '${username}'`
+    }).all();
+
+    const recordIds = records.map(record => record.id);
+    await base(SCANNED_DATA_TABLE_NAME).destroy(recordIds);
+
+    console.log(`All scan data cleared for ${username}`);
+  } catch (error) {
+    console.error('Error clearing user data from Airtable:', error);
+    throw error;
+  }
 };

@@ -50,6 +50,7 @@ function Login({ onLogin }) {
     <div style={styles.container}>
       <div style={styles.card}>
         <h2 style={styles.title}>Login</h2>
+
         {error && <p style={styles.error}>{error}</p>}
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
@@ -89,7 +90,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: 'linear-gradient(to right, #6a11cb, #2575fc)',
+    background: '#EFA91D',
   },
   card: {
     backgroundColor: 'white',
@@ -99,6 +100,11 @@ const styles = {
     width: '100%',
     maxWidth: '400px',
     textAlign: 'center',
+  },
+  logo: {
+    width: '100px',
+    height: 'auto',
+    marginBottom: '20px',
   },
   title: {
     marginBottom: '20px',
@@ -131,9 +137,6 @@ const styles = {
     boxSizing: 'border-box',
     transition: 'border-color 0.2s',
   },
-  inputFocus: {
-    borderColor: '#007bff',
-  },
   button: {
     padding: '10px',
     backgroundColor: '#007bff',
@@ -144,9 +147,6 @@ const styles = {
     fontSize: '16px',
     transition: 'background-color 0.3s',
   },
-  buttonHover: {
-    backgroundColor: '#0056b3',
-  }
 };
 
 export default Login;
