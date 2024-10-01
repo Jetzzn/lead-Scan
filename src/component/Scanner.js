@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback  } from "react";
+import React, { useState, useEffect,useCallback, } from "react";
 import { useNavigate } from "react-router-dom";
 import QrScanner from "react-qr-scanner";
 import {
@@ -17,6 +17,7 @@ function Scanner({ username }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scannedIds, setScannedIds] = useState(new Set());
   const [isScanning, setIsScanning] = useState(true);
+  const [key, setKey] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,43 +39,47 @@ function Scanner({ username }) {
     }
   };
 
+  const resetScanner = useCallback(() => {
+    setIsScanning(true);
+    setScanResult(null);
+    setError(null);
+    setKey(prevKey => prevKey + 1);
+  }, []);
+
   const handleScan = useCallback(async (data) => {
     if (data && isScanning) {
       setIsScanning(false);
       const scannedId = data.text;
       setScanResult(scannedId);
 
-      if (scannedIds.has(scannedId)) {
-        setError("This QR code has already been scanned.");
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
-        return;
-      }
-
       try {
-        const user = await getUserById(scannedId);
-        await storeUserScanData(username, user);
-        setUserData(prevData => [...prevData, user]);
-        setScannedIds(prevIds => new Set(prevIds).add(scannedId));
-        setError(null);
-        setModalUser(user);
-        setIsModalOpen(true);
+        if (scannedIds.has(scannedId)) {
+          setError("This QR code has already been scanned.");
+          setTimeout(resetScanner, 3000);
+        } else {
+          const user = await getUserById(scannedId);
+          await storeUserScanData(username, user);
+          setUserData(prevData => [...prevData, user]);
+          setScannedIds(prevIds => new Set(prevIds).add(scannedId));
+          setError(null);
+          setModalUser(user);
+          setIsModalOpen(true);
+          // Automatic reset after successful scan
+          setTimeout(resetScanner, 3000);
+        }
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to fetch user data. Please try again.");
-      } finally {
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        setTimeout(resetScanner, 3000);
       }
     }
-  }, [isScanning, scannedIds, username]);
+  }, [isScanning, scannedIds, username, resetScanner]);
 
   const handleError = useCallback((err) => {
     console.error(err);
     setError("Error scanning QR code. Please try again.");
-  }, []);
+    setTimeout(resetScanner, 3000);
+  }, [resetScanner]);
 
   const goToDownloadList = () => {
     navigate("/download");
@@ -83,6 +88,7 @@ function Scanner({ username }) {
   const closeModal = () => {
     setIsModalOpen(false);
     setModalUser(null);
+    resetScanner();
   };
 
   return (
@@ -92,6 +98,7 @@ function Scanner({ username }) {
         <>
           <div style={styles.scannerContainer}>
             <QrScanner
+              key={key}
               delay={300}
               onError={handleError}
               onScan={handleScan}
@@ -132,6 +139,7 @@ function Scanner({ username }) {
     </div>
   );
 }
+
 const styles = {
   container: {
     padding: "100px",
