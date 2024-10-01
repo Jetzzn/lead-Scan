@@ -46,7 +46,9 @@ function Scanner({ username }) {
 
       if (scannedIds.has(scannedId)) {
         setError("This QR code has already been scanned.");
-        setTimeout(() => setIsScanning(true), 3000);
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
         return;
       }
 
@@ -58,16 +60,13 @@ function Scanner({ username }) {
         setError(null);
         setModalUser(user);
         setIsModalOpen(true);
-        
-        // Set a timeout to refresh the page after 3 seconds
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to fetch user data. Please try again.");
       } finally {
-        setTimeout(() => setIsScanning(true), 3000);
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       }
     }
   }, [isScanning, scannedIds, username]);
@@ -79,20 +78,6 @@ function Scanner({ username }) {
 
   const goToDownloadList = () => {
     navigate("/download");
-  };
-
-  const clearAllData = async () => {
-    try {
-      await clearUserData(username);
-      setUserData([]);
-      setScannedIds(new Set());
-      setError(null);
-      setScanResult(null);
-      alert("All data has been cleared.");
-    } catch (error) {
-      console.error("Error clearing data:", error);
-      setError("Failed to clear data. Please try again.");
-    }
   };
 
   const closeModal = () => {
