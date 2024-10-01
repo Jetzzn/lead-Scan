@@ -19,12 +19,6 @@ function Scanner({ username }) {
   const [isScanning, setIsScanning] = useState(true);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (username) {
-  //     loadUserData();
-  //   }
-  // }, [username]);
-
   useEffect(() => {
     if (!username) {
       navigate("/login");
@@ -32,6 +26,7 @@ function Scanner({ username }) {
     }
     loadUserData();
   }, [username, navigate]);
+
   const loadUserData = async () => {
     try {
       const data = await getUserScanData(username);
@@ -45,13 +40,13 @@ function Scanner({ username }) {
 
   const handleScan = useCallback(async (data) => {
     if (data && isScanning) {
-      setIsScanning(false);  // Disable scanning immediately
+      setIsScanning(false);
       const scannedId = data.text;
       setScanResult(scannedId);
 
       if (scannedIds.has(scannedId)) {
         setError("This QR code has already been scanned.");
-        setTimeout(() => setIsScanning(true), 3000);  // Re-enable scanning after 3 seconds
+        setTimeout(() => setIsScanning(true), 3000);
         return;
       }
 
@@ -63,14 +58,20 @@ function Scanner({ username }) {
         setError(null);
         setModalUser(user);
         setIsModalOpen(true);
+        
+        // Set a timeout to refresh the page after 3 seconds
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to fetch user data. Please try again.");
       } finally {
-        setTimeout(() => setIsScanning(true), 3000);  // Re-enable scanning after 3 seconds
+        setTimeout(() => setIsScanning(true), 3000);
       }
     }
   }, [isScanning, scannedIds, username]);
+
   const handleError = useCallback((err) => {
     console.error(err);
     setError("Error scanning QR code. Please try again.");
@@ -98,6 +99,7 @@ function Scanner({ username }) {
     setIsModalOpen(false);
     setModalUser(null);
   };
+
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>QR Code Scanner</h2>
@@ -118,27 +120,22 @@ function Scanner({ username }) {
             <button onClick={goToDownloadList} style={styles.button}>
               Go to Download List
             </button>
-            {/* <button onClick={clearAllData} style={{...styles.button, backgroundColor: "#e74c3c"}}>
-              Clear All Data
-            </button> */}
           </div>
 
           {userData.length > 0 && (
-        <div>
-          <h3>Scanned User Data:</h3>
-          <ul>
-            {userData.map((user, index) => (
-              <li key={index}>
-                {user["First name"]} {user["Last name"]} - Email:{" "}
-                {user["Email"]} 
-                <br />
-                Scanned at: {new Date(user.scanTimestamp).toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
+            <div>
+              <h3>Scanned User Data:</h3>
+              <ul>
+                {userData.map((user, index) => (
+                  <li key={index}>
+                    {user["First name"]} {user["Last name"]} - Email: {user["Email"]}
+                    <br />
+                    Scanned at: {new Date(user.scanTimestamp).toLocaleString()}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       ) : (
         <p style={styles.loginMessage}>Please log in to use the scanner.</p>
@@ -150,7 +147,6 @@ function Scanner({ username }) {
     </div>
   );
 }
-
 const styles = {
   container: {
     padding: "100px",
