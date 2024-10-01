@@ -99,33 +99,38 @@ function Scanner({ username }) {
     setModalUser(null);
   };
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>QR Code Scanner</h2>
+    <div style={styles.container}>
+      <h2 style={styles.heading}>QR Code Scanner</h2>
       {username ? (
         <>
-          <div style={{ maxWidth: '300px', margin: '0 auto' }}>
+          <div style={styles.scannerContainer}>
             <QrScanner
               delay={300}
               onError={handleError}
               onScan={handleScan}
-              style={{ width: '100%' }}
+              style={styles.scanner}
             />
           </div>
-        </>
-      ) : (
-        <p>Please log in to use the scanner.</p>
-      )}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {scanResult && <p>Last Scanned QR Code: {scanResult}</p>}
+          {error && <p style={styles.errorMessage}>{error}</p>}
+          {scanResult && <p style={styles.scanResult}>Last Scanned QR Code: {scanResult}</p>}
 
-      {userData.length > 0 && (
+          <div style={styles.buttonContainer}>
+            <button onClick={goToDownloadList} style={styles.button}>
+              Go to Download List
+            </button>
+            {/* <button onClick={clearAllData} style={{...styles.button, backgroundColor: "#e74c3c"}}>
+              Clear All Data
+            </button> */}
+          </div>
+
+          {userData.length > 0 && (
         <div>
           <h3>Scanned User Data:</h3>
           <ul>
             {userData.map((user, index) => (
               <li key={index}>
                 {user["First name"]} {user["Last name"]} - Email:{" "}
-                {user["Email"]} - Phone Number: {user["Phone Number"]}
+                {user["Email"]} 
                 <br />
                 Scanned at: {new Date(user.scanTimestamp).toLocaleString()}
               </li>
@@ -134,37 +139,10 @@ function Scanner({ username }) {
         </div>
       )}
 
-      <button
-        onClick={goToDownloadList}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "20px",
-          marginRight: "10px",
-        }}
-      >
-        Go to Download List
-      </button>
-      <button
-        onClick={clearAllData}
-        style={{
-          padding: "10px 20px",
-          fontSize: "16px",
-          backgroundColor: "#dc3545",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "20px",
-        }}
-      >
-        Clear All Data
-      </button>
+        </>
+      ) : (
+        <p style={styles.loginMessage}>Please log in to use the scanner.</p>
+      )}
 
       {isModalOpen && modalUser && (
         <Modal user={modalUser} onClose={closeModal} />
@@ -172,5 +150,89 @@ function Scanner({ username }) {
     </div>
   );
 }
+
+const styles = {
+  container: {
+    padding: "100px",
+    maxWidth: "1000px",
+    margin: "0 auto",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    backgroundColor: "#ffffff",
+    borderRadius: "10px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
+  },
+  heading: {
+    fontSize: "clamp(24px, 5vw, 32px)",
+    color: "#2c3e50",
+    marginBottom: "3vh",
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  contentContainer: {
+    display: "flex",
+    flexDirection: "row",
+    gap: "4%",
+    '@media (max-width: 1024px)': {
+      flexDirection: "column",
+    },
+  },
+  scannerSection: {
+    flex: "1 1 50%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  scannerContainer: {
+    width: '100%',
+    maxWidth: '500px',
+    aspectRatio: '1 / 1',
+    margin: '0 auto 3vh',
+    '@media (max-width: 768px)': {
+      maxWidth: '100%',
+    },
+  },
+  scanner: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  dataSection: {
+    flex: "1 1 50%",
+  },
+  errorMessage: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: "2vh",
+    fontSize: "clamp(14px, 2.5vw, 16px)",
+  },
+  scanResult: {
+    textAlign: "center",
+    marginBottom: "2vh",
+    fontSize: "clamp(14px, 2.5vw, 16px)",
+  },
+  buttonContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "3vh",
+    gap: "2vh",
+  },
+  button: {
+    flex: "1 1 auto",
+    padding: "12px 25px",
+    fontSize: "clamp(14px, 2.5vw, 16px)",
+    backgroundColor: "#3498db",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "25px",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 3px 10px rgba(0, 0, 0, 0.2)",
+    '&:hover': {
+      transform: "translateY(-2px)",
+      boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
+    },
+  },
+
+};
 
 export default Scanner;
