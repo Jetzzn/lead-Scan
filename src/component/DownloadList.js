@@ -276,7 +276,7 @@ function DownloadList({ username }) {
 const styles = {
   container: {
     padding: "clamp(20px, 5vw, 100px)",
-    maxWidth: "1000px",
+    maxWidth: "1050px",
     margin: "0 auto",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: "#ffffff",

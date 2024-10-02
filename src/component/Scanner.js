@@ -119,9 +119,7 @@ function Scanner({ username }) {
             />
           </div>
           {error && <p style={styles.errorMessage}>{error}</p>}
-          {scanResult && (
-            <p style={styles.scanResult}>Last Scanned QR Code: {scanResult}</p>
-          )}
+          {scanResult && <p style={styles.scanResult}>Last Scanned QR Code: {scanResult}</p>}
 
           <div style={styles.buttonContainer}>
             <button onClick={goToDownloadList} style={styles.button}>
@@ -133,13 +131,12 @@ function Scanner({ username }) {
           </div>
 
           {userData.length > 0 && (
-            <div>
-              <h3>Scanned User Data:</h3>
-              <ul>
+            <div style={styles.scannedDataContainer}>
+              <h3 style={styles.scannedDataHeading}>Scanned User Data:</h3>
+              <ul style={styles.scannedDataList}>
                 {userData.map((user, index) => (
-                  <li key={index}>
-                    {user["First name"]} {user["Last name"]} - Email:{" "}
-                    {user["Email"]}
+                  <li key={index} style={styles.scannedDataItem}>
+                    {user["First name"]} {user["Last name"]} - Email: {user["Email"]}
                     <br />
                     Scanned at: {new Date(user.scanTimestamp).toLocaleString()}
                   </li>
@@ -152,22 +149,20 @@ function Scanner({ username }) {
         <p style={styles.loginMessage}>Please log in to use the scanner.</p>
       )}
 
-      {isModalOpen && modalUser && (
-        <Modal user={modalUser} onClose={closeModal} />
-      )}
+      {isModalOpen && modalUser && <Modal user={modalUser} onClose={closeModal} />}
     </div>
   );
 }
 
 const styles = {
   container: {
-    padding: "100px",
-    maxWidth: "1000px",
+    padding: "clamp(20px, 5vw, 100px)",
+    maxWidth: "1050px",
     margin: "0 auto",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: "#ffffff",
-    // borderRadius: "10px",
     boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
+    // borderRadius: "10px",
   },
   heading: {
     fontSize: "clamp(24px, 5vw, 32px)",
@@ -175,20 +170,6 @@ const styles = {
     marginBottom: "3vh",
     textAlign: "center",
     fontWeight: "600",
-  },
-  contentContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "4%",
-    "@media (max-width: 1024px)": {
-      flexDirection: "column",
-    },
-  },
-  scannerSection: {
-    flex: "1 1 50%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
   },
   scannerContainer: {
     width: "100%",
@@ -204,9 +185,6 @@ const styles = {
     height: "100%",
     objectFit: "cover",
   },
-  dataSection: {
-    flex: "1 1 50%",
-  },
   errorMessage: {
     color: "red",
     textAlign: "center",
@@ -220,9 +198,10 @@ const styles = {
   },
   buttonContainer: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     marginBottom: "3vh",
     gap: "2vh",
+    flexWrap: "wrap", // Wrap buttons on smaller screens
   },
   button: {
     flex: "1 1 auto",
@@ -239,6 +218,27 @@ const styles = {
       transform: "translateY(-2px)",
       boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
     },
+  },
+  scannedDataContainer: {
+    marginTop: "3vh",
+  },
+  scannedDataHeading: {
+    fontSize: "clamp(18px, 4vw, 22px)",
+    textAlign: "center",
+    marginBottom: "2vh",
+  },
+  scannedDataList: {
+    listStyleType: "none",
+    padding: 0,
+  },
+  scannedDataItem: {
+    marginBottom: "1vh",
+    fontSize: "clamp(14px, 2.5vw, 16px)",
+  },
+  loginMessage: {
+    textAlign: "center",
+    fontSize: "clamp(16px, 3vw, 18px)",
+    color: "#7f8c8d",
   },
 };
 
