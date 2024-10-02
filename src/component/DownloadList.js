@@ -5,7 +5,7 @@ import {
   clearUserData,
   getUserDetailedData,
 } from "../utils/airtableUtils";
-
+import PopupDetail from './PopupDetail';
 function DownloadList({ username }) {
   const [userData, setUserData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,12 +143,12 @@ function DownloadList({ username }) {
           </div>
 
           <div style={styles.buttonContainer}>
-            <button
+            {/* <button
               onClick={() => navigate("/scanner")}
               style={styles.scannerButton}
             >
               Back to Scanner
-            </button>
+            </button> */}
             {filteredData.length > 0 && (
               <button onClick={handleDownload} style={styles.downloadButton}>
                 Download CSV
@@ -215,48 +215,14 @@ function DownloadList({ username }) {
                   )
                 )}
               </div>
-              <div style={styles.clearButtonContainer}>
+              {/* <div style={styles.clearButtonContainer}>
                 <button onClick={clearAllData} style={styles.clearButton}>
                   Clear All Data
                 </button>
-              </div>
+              </div> */}
               {showPopup && selectedUser && (
-        <div style={styles.popupOverlay}>
-          <div style={styles.popupContent}>
-            <h3 style={styles.popupHeader}>User Details</h3>
-            <div style={styles.popupGrid}>
-              <div style={styles.popupSection}>
-                <h4 style={styles.sectionHeader}>Personal Information</h4>
-                <div style={styles.infoGrid}>
-                  <p><strong>ID:</strong> {selectedUser.id || '-'}</p>
-                  <p><strong>Name:</strong> {`${selectedUser['First name'] || '-'} ${selectedUser['Last name'] || '-'}`}</p>
-                  <p><strong>Email:</strong> {selectedUser['Email'] || '-'}</p>
-                  <p><strong>Gender:</strong> {selectedUser['Gender'] || '-'}</p>
-                  <p><strong>Age:</strong> {selectedUser['Age'] || '-'}</p>
-                  <p><strong>Scan Time:</strong> {new Date(selectedUser.scanTimestamp).toLocaleString() || '-'}</p>
-                </div>
-              </div>
-              <div style={styles.popupSection}>
-                <h4 style={styles.sectionHeader}>Educational Background</h4>
-                <div style={styles.infoGrid}>
-                  <p><strong>Institution:</strong> {selectedUser['Name of institution'] || '-'}</p>
-                  <p><strong>GPA:</strong> {selectedUser['GPA'] || '-'}</p>
-                  <p><strong>Highest Education:</strong> {selectedUser['Your highest education level'] || '-'}</p>
-                  <p><strong>Field of Study:</strong> {selectedUser['Field of study'] || '-'}</p>
-                </div>
-              </div>
-              <div style={styles.popupSection}>
-                <h4 style={styles.sectionHeader}>Study Abroad Plans</h4>
-                <div style={styles.infoGrid}>
-                  <p><strong>Year of Study Abroad:</strong> {selectedUser['Year of going to study abroad'] || '-'}</p>
-                  <p><strong>Level of Degree:</strong> {selectedUser['Level of degree (หลักสูตรที่กำลังจะไปศึกษาต่อ)'] || '-'}</p>
-                </div>
-              </div>
-            </div>
-            <button onClick={closePopup} style={styles.closeButton}>Close</button>
-          </div>
-        </div>
-      )}
+  <PopupDetail selectedUser={selectedUser} closePopup={closePopup} />
+)}
             </>
           ) : (
             <p style={styles.noDataMessage}>
@@ -276,7 +242,7 @@ function DownloadList({ username }) {
 const styles = {
   container: {
     padding: "clamp(20px, 5vw, 100px)",
-    maxWidth: "1050px",
+    maxWidth: "1010px",
     margin: "0 auto",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: "#ffffff",
@@ -310,15 +276,11 @@ const styles = {
   },
   buttonContainer: {
     display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "4vh",
-    gap: "2vh",
-    flexWrap: "wrap",
-    '@media (max-width: 768px)': {
-      flexDirection: "column",
-      alignItems: "center",
-    },
+    justifyContent: "flex-end",
+    width: "100%",
+    marginBottom: "20px", // Add some space below the button
   },
+
   button: {
     flex: "1 1 200px",
     padding: "12px 25px",
@@ -348,9 +310,9 @@ const styles = {
     },
   },
   downloadButton: {
-    flex: "1 1 200px",
-    padding: "12px 25px",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
+    width: "200px",
+    height: "45px",
+    fontSize: "16px",
     backgroundColor: "#4BD1A0",
     color: "#ffffff",
     border: "none",
@@ -358,6 +320,9 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.3s ease",
     boxShadow: "0 3px 10px rgba(0, 0, 0, 0.2)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     "&:hover": {
       transform: "translateY(-2px)",
       boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",

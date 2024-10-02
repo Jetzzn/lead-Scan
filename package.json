@@ -13,12 +13,14 @@
     "axios": "^1.7.7",
     "cors-anywhere": "^0.4.4",
     "install": "^0.13.0",
+    "lucide-react": "^0.447.0",
     "npm": "^10.8.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-qr-scanner": "^1.0.0-alpha.11",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "styled-components": "^6.1.13",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

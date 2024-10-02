@@ -157,7 +157,7 @@ function Scanner({ username }) {
 const styles = {
   container: {
     padding: "clamp(20px, 5vw, 100px)",
-    maxWidth: "1050px",
+    maxWidth: "1010px",
     margin: "0 auto",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: "#ffffff",
