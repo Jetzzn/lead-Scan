@@ -210,7 +210,7 @@ const styles = {
     backgroundColor: "#3498db",
     color: "#ffffff",
     border: "none",
-    borderRadius: "25px",
+    borderRadius: "5px",
     cursor: "pointer",
     transition: "all 0.3s ease",
     boxShadow: "0 3px 10px rgba(0, 0, 0, 0.2)",
