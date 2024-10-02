@@ -283,3 +283,40 @@ export const clearUserData = async (username) => {
     throw error;
   }
 };
+export const getUserDetailedData = async (userId) => {
+  try {
+    console.log(`Fetching detailed user data for ID: ${userId}`);
+    const records = await base(DOWNLOAD_DATA_TABLE_NAME).select({
+      filterByFormula: `{Unique ID} = '${userId}'`,
+      maxRecords: 1
+    }).firstPage();
+
+    if (records.length > 0) {
+      const userData = records[0].fields;
+      console.log('Detailed user data fetched successfully:', userData);
+      return {
+        id: userId,
+        'First name': userData['First name'],
+        'Last name': userData['Last name'],
+        'Email': userData['Email'],
+        'Phone Number': userData['Phone Number'],
+        'Name of institution': userData['Name of institution'],
+        'GPA': userData['GPA'],
+        'Age': userData['Age'],
+        'Year of going to study abroad': userData['Year of going to study abroad'],
+        'Your highest education level': userData['Your highest education level'],
+        'Gender': userData['Gender'],
+        'Field of study': userData['Field of study'],
+        'Level of degree (หลักสูตรที่กำลังจะไปศึกษาต่อ)': userData['Level of degree (หลักสูตรที่กำลังจะไปศึกษาต่อ)'],
+        
+        // Add any other fields you want to display in the pop-up
+      };
+    } else {
+      console.log('No detailed records found for this userId');
+      throw new Error('User details not found');
+    }
+  } catch (error) {
+    console.error('Error fetching detailed user data:', error);
+    throw error;
+  }
+};

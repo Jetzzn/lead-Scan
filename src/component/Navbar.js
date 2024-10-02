@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -7,6 +7,7 @@ function Navbar({ userData, onLogout }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const dropdownRef = useRef(null); // Create a ref for the dropdown
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -17,13 +18,28 @@ function Navbar({ userData, onLogout }) {
     navigate("/login");
   };
 
-  const handleLogoClick = () => {
-    if (location.pathname === "/dashboard") {
-      // If already on dashboard, do nothing
-      return;
-    }
-    navigate(-1); // Navigate to the previous page
+  const handleNavigation = (path) => {
+    navigate(path);
   };
+
+  // Handle closing dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false); // Close dropdown if clicked outside
+      }
+    };
+
+    // Add event listener when dropdown is shown
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Clean up event listener on component unmount or when dropdown is closed
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   return (
     <nav style={styles.navbar}>
@@ -32,17 +48,37 @@ function Navbar({ userData, onLogout }) {
           src={require("../assets/OCSC-EXPO-LOGO.png")}
           alt="Logo"
           style={styles.logo}
-          onClick={handleLogoClick}
+          onClick={() => handleNavigation("/")}
           role="button"
           tabIndex={0}
         />
       </div>
-      <div style={{ position: "relative" }}>
+      <div style={styles.tabContainer}>
+        <button
+          onClick={() => handleNavigation("/scanner")}
+          style={{
+            ...styles.navButton,
+            ...(location.pathname === "/scanner" ? styles.activeButton : {}),
+          }}
+        >
+          Scanner
+        </button>
+        <button
+          onClick={() => handleNavigation("/download")}
+          style={{
+            ...styles.navButton,
+            ...(location.pathname === "/download" ? styles.activeButton : {}),
+          }}
+        >
+          Download List
+        </button>
+      </div>
+      <div style={styles.profileContainer}>
         <button onClick={toggleDropdown} style={styles.profileButton}>
           <FontAwesomeIcon icon={faUser} />
         </button>
         {showDropdown && userData && (
-          <div style={styles.dropdown}>
+          <div ref={dropdownRef} style={styles.dropdown}>
             <h3 style={styles.dropdownTitle}>User Profile</h3>
             <p style={styles.dropdownText}>
               <strong>Username:</strong> {userData.Username}
@@ -63,26 +99,52 @@ function Navbar({ userData, onLogout }) {
 const styles = {
   navbar: {
     background: "#FFFFFF",
-    padding: "15px",
+    padding: "15px 30px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     color: "#333",
-    fontFamily: "Arial, sans-serif",
-    position: "relative",
+    fontFamily: "'Poppins', sans-serif",
     boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+    position: "relative",
   },
   logoContainer: {
     flex: 1,
+    display: "flex",
+    justifyContent: "flex-start",
     cursor: "pointer",
   },
   logo: {
-    height: "40px",
+    height: "45px",
     width: "auto",
-    transition: "opacity 0.3s ease",
+  },
+  tabContainer: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    gap: "40px",
+  },
+  navButton: {
+    background: "transparent",
+    border: "none",
+    color: "#333",
+    fontSize: "18px",
+    padding: "10px 20px",
+    cursor: "pointer",
+    borderRadius: "20px",
+    transition: "all 0.3s ease",
+    letterSpacing: "1px",
+  },
+  activeButton: {
+    background: "rgba(0, 0, 0, 0.1)",
+  },
+  profileContainer: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "flex-end",
   },
   profileButton: {
-    background: "#EFA91D",
+    background: "#3498db",
     border: "none",
     color: "white",
     cursor: "pointer",
@@ -90,9 +152,6 @@ const styles = {
     padding: "10px 20px",
     borderRadius: "25px",
     transition: "background-color 0.3s ease",
-  },
-  profileButtonHover: {
-    backgroundColor: "#D69017",
   },
   dropdown: {
     position: "absolute",
@@ -104,7 +163,6 @@ const styles = {
     boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.1)",
     zIndex: 1000,
     minWidth: "250px",
-    animation: "fadeIn 0.3s ease-in-out",
   },
   dropdownTitle: {
     margin: "0 0 10px",
@@ -125,10 +183,6 @@ const styles = {
     cursor: "pointer",
     fontSize: "16px",
     marginTop: "10px",
-    transition: "background-color 0.3s ease",
-  },
-  logoutButtonHover: {
-    backgroundColor: "#d32f2f",
   },
 };
 

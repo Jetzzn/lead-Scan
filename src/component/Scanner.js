@@ -166,7 +166,7 @@ const styles = {
     margin: "0 auto",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: "#ffffff",
-    borderRadius: "10px",
+    // borderRadius: "10px",
     boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
   },
   heading: {
