@@ -28,14 +28,15 @@ const PopupDetail = ({ selectedUser, closePopup }) => (
             <p><strong>Institution:</strong> {selectedUser['Name of institution'] || '-'}</p>
             <p><strong>GPA:</strong> {selectedUser['GPA'] || '-'}</p>
             <p><strong>Highest Education:</strong> {selectedUser['Your highest education level'] || '-'}</p>
-            <p><strong>Field of Study:</strong> {selectedUser['Field of study'] || '-'}</p>
+            
           </div>
         </div>
         <div style={styles.popupSection}>
           <h4 style={styles.sectionHeader}>Study Abroad Plans</h4>
           <div style={styles.infoList}>
             <p><strong>Year of Study Abroad:</strong> {selectedUser['Year of going to study abroad'] || '-'}</p>
-            <p><strong>Level of Degree:</strong> {selectedUser['Level of degree (หลักสูตรที่กำลังจะไปศึกษาต่อ)'] || '-'}</p>
+            <p><strong>Field of Study Interest:</strong> {selectedUser['Field of study'] || '-'}</p>
+            <p><strong>Level of Degree Interest:</strong> {selectedUser['Level of degree (หลักสูตรที่กำลังจะไปศึกษาต่อ)'] || '-'}</p>
           </div>
         </div>
       </div>
